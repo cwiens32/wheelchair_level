@@ -60,7 +60,7 @@ for file in glob.glob('*.xlsx'):
     trial = '{:02}'.format(int(''.join(filter(str.isdigit, file[28:37]))))
     cycle = '{:02}'.format(int(''.join(filter(str.isdigit, file[36:]))))
     """ upload all data to database """
-    data_angle.to_sql('angle_' + sub + sess + cond + trial + cycle, conn, if_exists='replace', index=False)
+    data_angle.to_sql('angle_' + sub + sess + cond + trial + cycle, conn, if_exists='replace')
     data_rf.to_sql('force_' + sub + sess + cond + trial + cycle, conn, if_exists='replace')
     """ add data info to list of tables """
     if table_data is None:
