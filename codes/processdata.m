@@ -87,9 +87,12 @@ for k = 1:length(matfiles)
         torso_vel(pppp-1) = (torso_angle_temp(pppp)-torso_angle_temp(pppp-1))/dt;
     end
     torso_vel_CROP = torso_vel;
+    % peak reaction force during elbow extension
+    [~, inddRF] = max( RF_mag_CROP );
     
     %% save angle data
-    save(fullFileName, 'elbow_ang_CROP', 'elb_vel_CROP', 'torso_ang_CROP', 'torso_vel_CROP', '-append')
+    save(fullFileName, 'RF_angleForearmCROP', 'RF_mag_CROP', 'elbow_ang_CROP', 'elb_vel_CROP',...
+        'torso_ang_CROP', 'torso_vel_CROP', '-append')
 
     %% cropped to elbow extension
     % use this to find instant of elbow extension
@@ -106,6 +109,7 @@ for k = 1:length(matfiles)
     [~, ang_inddRF] = max( RF_mag_CROP(indd:end) );
     
     %% add data to table
+    % USING CROPPED DATA FROM Mz > +5Nm
     % store subject number
     tableOut.Subject(cnt1,1) = Subject_Number;
     % store session number
@@ -114,31 +118,39 @@ for k = 1:length(matfiles)
     tableOut.CycleNumber(cnt1,1) = Cycle_Number;
     % store trial number
     tableOut.TrialNumber(cnt1,1) = str2double(Trial_Number);
+    % store Mz crop start index
+    tableOut.CropInd_Start(cnt1,1) = start;
+    % store Mz crop stop index
+    tableOut.CropInd_Stop(cnt1,1) = stop;
 
     % mean velocity
-    tableOut.velocityMean(cnt1,1) = mean(Velocity_cycle(indd:stop));
+    tableOut.velocityMean(cnt1,1) = mean(Velocity_cycle(start:stop));
     % Elbow extension duration
-    tableOut.push_duration(cnt1,1) = sum((stop-indd))*dt;
+    tableOut.push_duration(cnt1,1) = sum((stop-start))*dt;
     % Resultant Shoulder NJM Impulse
-    tableOut.Shoulder_NJMmag_Impulse(cnt1,1) = sum(Shoulder_NJM_mag(indd:stop))*dt;
+    tableOut.Shoulder_NJMmag_Impulse(cnt1,1) = sum(Shoulder_NJM_mag(start:stop))*dt;
     % store maximum elbow angular velocity
-    tableOut.ElbowAngVelMax(cnt1,1) = max(elb_vel_PUSH);
+    tableOut.ElbowAngVelMax(cnt1,1) = max(elb_vel_CROP);
     % store elbow angle when elbow angular velocity is 0
-    tableOut.ElbowAngAtZeroElbVel(cnt1,1) = elb_ang_PUSH(1);
+    tableOut.ElbowAngAtZeroElbVel(cnt1,1) = elbow_ang_CROP(indd);
     % store elbow angle when max elbow angular velocity occurs
-    tableOut.ElbowAngAtMaxElbVel(cnt1,1) = elb_ang_PUSH(indEMV);
+    tableOut.ElbowAngAtMaxElbVel(cnt1,1) = elbow_ang_CROP(indEMV);
     % store torso angle at start of elbow extension
-    tableOut.TorsoAngleatElbowExt(cnt1,1) = torso_ang_PUSH(1);
+    tableOut.TorsoAngleatElbowExt(cnt1,1) = torso_ang_CROP(indd);
     % store torso angle at max force applied to wheel
-    tableOut.TorsoAngleatMaxForceonWheel(cnt1,1) = torso_ang_PUSH(ang_inddRF);
-    % crop reaction force angle relative to forearm
-    RF_angleForearm_PUSH = RF_angleForearmCROP(indd:end);
-    % reaction force angle relative to forearm at elb ext start
-    tableOut.RF_angleFA_PeakRF(cnt1,1) = RF_angleForearm_PUSH(ang_inddRF);
+    tableOut.TorsoAngleatMaxForceonWheel(cnt1,1) = torso_ang_CROP(ang_inddRF);
+    % reaction force angle relative to forearm at peak RF
+    tableOut.RF_angleFA_PeakRF(cnt1,1) = RF_angleForearmCROP(inddRF);
+    % store start of elbow extension index
+    tableOut.Start_Elb_Ext_Ind(cnt1,1) = indd;
+    % store peak elbow angular velocity index
+    tableOut.RF_Elb_Ext_AngVel_Ind(cnt1,1) = indEMV;
+    % store peak reaction force index
+    tableOut.RF_peak_Ind(cnt1,1) = inddRF;
     % iterate counter
     cnt1 = cnt1 + 1;
     
 end
 
 %% write out table
-writetable(tableOut, 'DOD_level_results_CW_200713.xlsx')
+writetable(tableOut, 'DOD_graded_results_CW_200826.xlsx')
