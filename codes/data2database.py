@@ -53,6 +53,7 @@ os.chdir('../data/subject_data')
 for file in glob.glob('*.xlsx'):
     data_angle = pd.read_excel(file, sheet_name = "Sheet1")
     data_rf = pd.read_excel(file, sheet_name = "Sheet2")
+    data_full = pd.read_excel(file, sheet_name = "Sheet3")
     # find cycle info
     sub = '{:02}'.format(int(''.join(filter(str.isdigit, file[:7]))))
     sess = ''.join(filter(str.isdigit, file[10:18]))
@@ -62,6 +63,7 @@ for file in glob.glob('*.xlsx'):
     """ upload all data to database """
     data_angle.to_sql('angle_' + sub + sess + cond + trial + cycle, conn, if_exists='replace')
     data_rf.to_sql('force_' + sub + sess + cond + trial + cycle, conn, if_exists='replace')
+    data_full.to_sql('fulldata_' + sub + sess + cond + trial + cycle, conn, if_exists='replace')
     """ add data info to list of tables """
     if table_data is None:
         table_data = pd.DataFrame({'subject_id': [int(sub)],
@@ -70,7 +72,8 @@ for file in glob.glob('*.xlsx'):
                                    'trial': [int(trial)],
                                    'cycle': [int(cycle)],
                                    'force': ['force_' + sub + sess + cond + trial + cycle],
-                                   'angle': ['angle_' + sub + sess + cond + trial + cycle]})
+                                   'angle': ['angle_' + sub + sess + cond + trial + cycle],
+                                   'fulldata': ['fulldata_' + sub + sess + cond + trial + cycle]})
     else:
         table_data = table_data.append(pd.DataFrame({'subject_id': [int(sub)],
                                                      'session': [int(sess)],
@@ -78,7 +81,8 @@ for file in glob.glob('*.xlsx'):
                                                      'trial': [int(trial)],
                                                      'cycle': [int(cycle)],
                                                      'force': ['force_' + sub + sess + cond + trial + cycle],
-                                                     'angle': ['angle_' + sub + sess + cond + trial + cycle]})).reset_index(drop=True)
+                                                     'angle': ['angle_' + sub + sess + cond + trial + cycle],
+                                                     'fulldata': ['fulldata_' + sub + sess + cond + trial + cycle]})).reset_index(drop=True)
             
 # return to original folder
 os.chdir('../..')
